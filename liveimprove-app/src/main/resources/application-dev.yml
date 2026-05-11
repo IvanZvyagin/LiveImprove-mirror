@@ -1,0 +1,24 @@
+app:
+  security:
+    enabled: true
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/liveimprove}
+    username: ${DB_USER:appuser}
+    password: ${DB_PASSWORD:apppass}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8082/realms/liveimprove}
