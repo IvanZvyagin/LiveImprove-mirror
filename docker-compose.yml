@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres-app:
+    image: postgres:16-alpine
+    container_name: liveimprove-postgres
+    environment:
+      POSTGRES_DB: liveimprove
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:-apppass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata-app:/var/lib/postgresql/data
+    networks:
+      - liveimprove-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: liveimprove-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - liveimprove-net
+
+  postgres-keycloak:
+    image: postgres:16-alpine
+    container_name: liveimprove-keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloakuser
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloakpass}
+    volumes:
+      - pgdata-keycloak:/var/lib/postgresql/data
+    networks:
+      - liveimprove-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.0
+    container_name: liveimprove-keycloak
+    environment:
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8082
+      KC_HTTP_ENABLED: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres-keycloak
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloakuser
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloakpass}
+    ports:
+      - "8082:8080"  # контейнерный порт 8080 маппим на 8082
+    depends_on:
+      - postgres-keycloak
+    networks:
+      - liveimprove-net
+    command: start-dev
+
+networks:
+  liveimprove-net:
+    driver: bridge
+
+volumes:
+  pgdata-app:
+  pgdata-keycloak:
