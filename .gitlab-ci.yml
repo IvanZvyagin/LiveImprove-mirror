@@ -1,0 +1,88 @@
+stages:
+  - build
+  - test
+  - package
+
+variables:
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=2"
+
+default:
+  image: eclipse-temurin:21-jdk
+  tags:
+    - saas-linux-medium-amd64
+  interruptible: true
+  before_script:
+    - chmod +x ./gradlew
+  cache:
+    key:
+      files:
+        - build.gradle.kts
+        - liveimprove-app/build.gradle.kts
+    paths:
+      - .gradle/caches/
+      - .gradle/wrapper/
+
+build:
+  stage: build
+  script:
+    - ./gradlew assemble -x test --no-daemon
+  artifacts:
+    name: "build-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - "**/build/libs/*.jar"
+      - "**/build/classes/"
+      - "**/build/generated/"
+    expire_in: 1 day
+
+test:
+  stage: test
+  needs:
+    - job: build
+      artifacts: true
+  script:
+    - ./gradlew test --no-daemon
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - "**/build/test-results/test/TEST-*.xml"
+    paths:
+      - "**/build/reports/tests/"
+    expire_in: 1 week
+
+docker:build:
+  stage: package
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  needs:
+    - job: test
+      artifacts: false
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH
+      when: manual
+      allow_failure: true
+  variables:
+    IMAGE_NAME: "$CI_REGISTRY_IMAGE/backend"
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - >-
+      echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}"
+      > /kaniko/.docker/config.json
+  script:
+    - |
+      DEST_ARGS="--destination $IMAGE_NAME:$CI_COMMIT_SHORT_SHA --destination $IMAGE_NAME:$CI_COMMIT_REF_SLUG"
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ] || [ -n "$CI_COMMIT_TAG" ]; then
+        DEST_ARGS="$DEST_ARGS --destination $IMAGE_NAME:latest"
+      fi
+      /kaniko/executor \
+        --context "$CI_PROJECT_DIR" \
+        --dockerfile "$CI_PROJECT_DIR/liveimprove-app/Dockerfile" \
+        $DEST_ARGS \
+        --cache=true \
+        --cache-ttl=72h \
+        --snapshot-mode=redo \
+        --use-new-run
