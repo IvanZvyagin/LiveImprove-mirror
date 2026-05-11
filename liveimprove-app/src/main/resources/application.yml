@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: liveimprove
+  profiles:
+    default: local
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  liquibase:
+    enabled: false
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+logging:
+  level:
+    root: INFO
+    com.liveimprove: DEBUG
