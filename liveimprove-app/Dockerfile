@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # ---------- build ----------
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /workspace
 
@@ -15,7 +15,7 @@ RUN ./gradlew :liveimprove-app:bootJar --no-daemon -x test \
     && rm -f liveimprove-app/build/libs/*-plain.jar
 
 # ---------- runtime ----------
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 
 RUN groupadd --system app && useradd --system --gid app --home-dir /app --shell /usr/sbin/nologin app
 
