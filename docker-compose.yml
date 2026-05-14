@@ -1,5 +1,8 @@
 version: '3.8'
 
+# Локальная инфра под профиль dev: Postgres (бизнес-данные) + Redis.
+# Аутентификация пользователей — Supabase (облако), не в этом compose.
+
 services:
   postgres-app:
     image: postgres:16-alpine
@@ -15,13 +18,13 @@ services:
     networks:
       - liveimprove-net
 
-#  redis:
-#    image: redis:7-alpine
-#    container_name: liveimprove-redis
-#    ports:
-#      - "6379:6379"
-#    networks:
-#      - liveimprove-net
+  redis:
+    image: redis:7-alpine
+    container_name: liveimprove-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - liveimprove-net
 
 networks:
   liveimprove-net:
@@ -29,4 +32,3 @@ networks:
 
 volumes:
   pgdata-app:
-  pgdata-keycloak:

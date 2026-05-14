@@ -1,7 +1,9 @@
-# Только API (профиль local, H2). Фронт — отдельно npm run dev в frontend/, когда появится в репо.
+# Локальный полный стек: Spring Boot (профиль local, H2) + статика фронта (nginx).
+# Инфра (Postgres/Redis) — в docker-compose.yml; JWT выдаёт Supabase в облаке.
 #
-# Запуск: docker compose -f docker-compose.dev.yml up -d --build
-# Health: http://localhost:8080/actuator/health
+# Запуск:  docker compose -f docker-compose.dev.yml up --build
+# UI:      http://localhost:5173
+# API:     http://localhost:8080
 
 services:
   backend:
@@ -19,3 +21,15 @@ services:
       timeout: 3s
       retries: 30
       start_period: 45s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8080/api/v1
+    container_name: liveimprove-frontend-dev
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_started
