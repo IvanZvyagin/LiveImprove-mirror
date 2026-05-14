@@ -1,9 +1,13 @@
 import './Goals.module.css'
 import type { CSSProperties } from 'react'
+import { useNavigate } from 'react-router-dom'
 import CompletedGoalRow from '../components/CompletedGoalRow'
+import EmptyState from '../components/EmptyState/EmptyState'
+import GoalTargetIcon from '../components/EmptyState/icons/GoalTargetIcon'
 import GoalCard from '../components/GoalCard'
 import StatCard, { type StatIcon } from '../components/StatCard'
 import Chip from '../components/ui/Chip'
+import FabAddButton from '../components/ui/FabAddButton'
 import IconButton from '../components/ui/IconButton'
 import SectionHeader from '../components/ui/SectionHeader'
 import Card from '../components/ui/Card'
@@ -11,24 +15,24 @@ import useGoals from '../hooks/useGoals'
 
 const accentColors = {
   blue: {
-    color: '#4f8cff',
-    glow: 'rgba(79, 140, 255, 0.25)',
-    soft: 'rgba(79, 140, 255, 0.2)',
+    color: '#3b82f6',
+    glow: 'rgba(59, 130, 246, 0.28)',
+    soft: 'rgba(59, 130, 246, 0.2)',
   },
   green: {
-    color: '#2ee58a',
-    glow: 'rgba(46, 229, 138, 0.22)',
-    soft: 'rgba(46, 229, 138, 0.2)',
+    color: '#22c55e',
+    glow: 'rgba(34, 197, 94, 0.28)',
+    soft: 'rgba(34, 197, 94, 0.2)',
   },
   orange: {
-    color: '#f59e0b',
-    glow: 'rgba(245, 158, 11, 0.25)',
-    soft: 'rgba(245, 158, 11, 0.2)',
+    color: '#f97316',
+    glow: 'rgba(249, 115, 22, 0.28)',
+    soft: 'rgba(249, 115, 22, 0.2)',
   },
   purple: {
-    color: '#8b5cf6',
-    glow: 'rgba(139, 92, 246, 0.25)',
-    soft: 'rgba(139, 92, 246, 0.2)',
+    color: '#a855f7',
+    glow: 'rgba(168, 85, 247, 0.28)',
+    soft: 'rgba(168, 85, 247, 0.2)',
   },
 } as const
 
@@ -68,11 +72,26 @@ const buildSparkline = (values: readonly number[], width: number, height: number
 }
 
 export default function Goals() {
-  const { data: goals, addGoal, toggleItem, trackAction } = useGoals()
+  const navigate = useNavigate()
+  const { data: goals, toggleItem, removeGoal, trackAction } = useGoals()
+
+  const handleDeleteGoal = async (goalId: string) => {
+    if (!window.confirm('Удалить эту цель? Все подцели будут удалены.')) return
+    const ok = await removeGoal(goalId)
+    if (ok) {
+      await trackAction('goals.deleted', goalId)
+    } else {
+      window.alert(
+        'Не удалось удалить цель. Убедитесь, что backend запущен (например localhost:8080), перезапустите его и обновите страницу.',
+      )
+    }
+  }
   const statsChart = buildSparkline(goals.stats.trend, 220, 70)
+  const isEmpty = goals.goals.length === 0 && goals.completed.length === 0
+
   const statsMetrics: Array<{
     label: string
-    value: string | number
+    value: number | string
     iconType: StatIcon
     color: string
     soft: string
@@ -126,112 +145,123 @@ export default function Goals() {
           <IconButton type="button" badge="3" onClick={() => trackAction('goals.notifications')}>
             🔔
           </IconButton>
-          <div className="user-chip">
-            <span className="user-avatar">А</span>
-            <span>Алексей</span>
-            <span className="chevron">▾</span>
-          </div>
-          <button className="button" type="button" onClick={addGoal}>
-            + Новая цель
-          </button>
+          <FabAddButton ariaLabel="Новая цель" onClick={() => navigate('/goals/new')} />
         </div>
       </header>
 
-      <div className="goals-toolbar">
-        <div className="view-toggle">
-          <Chip active type="button" onClick={() => trackAction('goals.view', 'cards')}>
-            Карточки
-          </Chip>
-          <Chip type="button" onClick={() => trackAction('goals.view', 'list')}>
-            Список
-          </Chip>
-        </div>
-      </div>
-
-      <section className="goals-grid">
-        {goals.goals.map((goal) => {
-          const accentStyle = {
-            '--accent-color': accentColors[goal.accent].color,
-            '--accent-glow': accentColors[goal.accent].glow,
-            '--accent-soft': accentColors[goal.accent].soft,
-          } as CSSProperties
-
-          return (
-            <GoalCard
-              key={goal.id}
-              goal={goal}
-              accentStyle={accentStyle}
-              onToggleItem={(_, itemId, done) => toggleItem(itemId, done)}
-            />
-          )
-        })}
-      </section>
-
-      <section className="goals-bottom">
-        <div className="completed-section">
-          <div className="section-title">
-            Завершенные цели <span>{goals.completed.length}</span>
+      {isEmpty ? (
+        <EmptyState
+          icon={<GoalTargetIcon size={320} />}
+          title="Время ставить новые цели"
+          description={
+            <>
+              Ваш путь к успеху начинается с первого шага. Создайте свою
+              первую цель, чтобы начать отслеживать прогресс.
+            </>
+          }
+          actionLabel="Создать первую цель"
+          onAction={() => navigate('/goals/new')}
+        />
+      ) : (
+        <>
+          <div className="goals-toolbar">
+            <div className="view-toggle">
+              <Chip active type="button" onClick={() => trackAction('goals.view', 'cards')}>
+                Карточки
+              </Chip>
+              <Chip type="button" onClick={() => trackAction('goals.view', 'list')}>
+                Список
+              </Chip>
+            </div>
           </div>
-          <div className="completed-list">
-            {goals.completed.map((goal) => {
+
+          <section className="goals-grid">
+            {goals.goals.map((goal) => {
               const accentStyle = {
                 '--accent-color': accentColors[goal.accent].color,
                 '--accent-glow': accentColors[goal.accent].glow,
                 '--accent-soft': accentColors[goal.accent].soft,
               } as CSSProperties
 
-              return <CompletedGoalRow key={goal.id} goal={goal} accentStyle={accentStyle} />
+              return (
+                <GoalCard
+                  key={goal.id}
+                  goal={goal}
+                  accentStyle={accentStyle}
+                  onToggleItem={(_, itemId, done) => toggleItem(itemId, done)}
+                  onDelete={handleDeleteGoal}
+                />
+              )
             })}
-          </div>
-        </div>
+          </section>
 
-        <Card className="stats-card">
-          <SectionHeader
-            title="Общая статистика"
-            actions={
-              <Chip type="button" active>
-                {goals.stats.period}
-              </Chip>
-            }
-          />
-          <div className="stats-metrics">
-            {statsMetrics.map((metric) => (
-              <StatCard
-                key={metric.label}
-                label={metric.label}
-                value={metric.value}
-                iconType={metric.iconType}
-                color={metric.color}
-                soft={metric.soft}
+          <section className="goals-bottom">
+            <div className="completed-section">
+              <div className="section-title">
+                Завершенные цели <span>{goals.completed.length}</span>
+              </div>
+              <div className="completed-list">
+                {goals.completed.map((goal) => {
+                  const accentStyle = {
+                    '--accent-color': accentColors[goal.accent].color,
+                    '--accent-glow': accentColors[goal.accent].glow,
+                    '--accent-soft': accentColors[goal.accent].soft,
+                  } as CSSProperties
+
+                  return <CompletedGoalRow key={goal.id} goal={goal} accentStyle={accentStyle} />
+                })}
+              </div>
+            </div>
+
+            <Card className="stats-card">
+              <SectionHeader
+                title="Общая статистика"
+                actions={
+                  <Chip type="button" active>
+                    {goals.stats.period}
+                  </Chip>
+                }
               />
-            ))}
-          </div>
-          <div className="stats-chart">
-            <svg viewBox={`0 0 ${statsChart.width} ${statsChart.height}`} role="presentation">
-              <defs>
-                <linearGradient id="statsLineGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#a855f7" />
-                  <stop offset="100%" stopColor="#6366f1" />
-                </linearGradient>
-                <filter id="statsGlow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="4" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              <path className="stats-line" d={statsChart.smoothPath} stroke="url(#statsLineGradient)" />
-              <path
-                className="stats-line glow"
-                d={statsChart.smoothPath}
-                stroke="url(#statsLineGradient)"
-                filter="url(#statsGlow)"
-              />
-            </svg>
-          </div>
-        </Card>
-      </section>
+              <div className="stats-metrics">
+                {statsMetrics.map((metric) => (
+                  <StatCard
+                    key={metric.label}
+                    label={metric.label}
+                    value={metric.value}
+                    iconType={metric.iconType}
+                    color={metric.color}
+                    soft={metric.soft}
+                  />
+                ))}
+              </div>
+              <div className="stats-chart">
+                <svg viewBox={`0 0 ${statsChart.width} ${statsChart.height}`} role="presentation">
+                  <defs>
+                    <linearGradient id="statsLineGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#a855f7" />
+                      <stop offset="100%" stopColor="#6366f1" />
+                    </linearGradient>
+                    <filter id="statsGlow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <path className="stats-line" d={statsChart.smoothPath} stroke="url(#statsLineGradient)" />
+                  <path
+                    className="stats-line glow"
+                    d={statsChart.smoothPath}
+                    stroke="url(#statsLineGradient)"
+                    filter="url(#statsGlow)"
+                  />
+                </svg>
+              </div>
+            </Card>
+          </section>
+        </>
+      )}
     </div>
   )
 }

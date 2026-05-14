@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import type { CSSProperties } from 'react'
 import { describe, expect, it } from 'vitest'
-import type { Goal } from '../types/goals'
 import GoalCard from './GoalCard'
+import type { Goal } from '../types/goals'
 
 const goal: Goal = {
   id: 'goal-1',

@@ -28,15 +28,40 @@ export type IncomeSeries = {
   labels: string[]
 }
 
+export type MetricIconKind =
+  | 'tasks'
+  | 'velocity'
+  | 'coverage'
+  | 'review'
+  | 'debt'
+
 export type KeyMetric = {
   label: string
   value: number | string
   delta: string
+  trend?: 'up' | 'down'
+  iconKind?: MetricIconKind
+  points?: number[]
+  color?: string
 }
 
 export type Insight = {
   title: string
   text: string
+  kind?: 'insight' | 'recommendation'
+}
+
+export type IncomeMetaItem = {
+  label: string
+  value: string
+  arrow?: boolean
+}
+
+export type InterviewsMeta = {
+  conversionLabel: string
+  conversionValue: string
+  bestLabel: string
+  bestValue: string
 }
 
 export type AnalyticsData = {
@@ -45,11 +70,13 @@ export type AnalyticsData = {
     value: number
     delta: string
     status: string
+    description?: string
   }
   outputMeta: AnalyticsMeta[]
-  bugRate: BugRate
+  bugRate: BugRate & { footer?: string; gridMax?: number; gridStep?: number }
   interviews: InterviewStage[]
-  income: IncomeSeries
+  interviewsMeta?: InterviewsMeta
+  income: IncomeSeries & { subtitle?: string; meta?: IncomeMetaItem[] }
   metrics: KeyMetric[]
   insights: Insight[]
 }

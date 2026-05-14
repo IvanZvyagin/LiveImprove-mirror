@@ -1,7 +1,21 @@
 .card {
-  background: radial-gradient(circle at top, rgba(124, 58, 237, 0.08), transparent 55%), var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 12px 30px rgba(5, 8, 18, 0.4);
+  position: relative;
+  background:
+    radial-gradient(80% 60% at 50% -10%, rgba(155, 92, 255, 0.08), transparent 70%),
+    linear-gradient(180deg, rgba(20, 28, 52, 0.78), rgba(12, 18, 38, 0.72));
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--card-border-hover);
+  box-shadow:
+    0 12px 32px rgba(4, 8, 22, 0.7),
+    0 0 0 1px rgba(155, 92, 255, 0.18),
+    inset 0 1px 0 rgba(188, 205, 255, 0.08);
 }

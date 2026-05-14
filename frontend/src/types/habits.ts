@@ -7,6 +7,7 @@ export type HabitItem = {
   time: string
   done: boolean
   icon: string
+  reminderEnabled?: boolean
 }
 
 export type HabitCategory = {

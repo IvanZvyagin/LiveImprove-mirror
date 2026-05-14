@@ -1,4 +1,10 @@
 :global {
+  .goals-page {
+    background: #0d1117;
+    min-height: 100%;
+    border-radius: 20px;
+  }
+
   .view-toggle {
     display: flex;
     gap: 8px;
@@ -19,13 +25,76 @@
     --accent-glow: rgba(124, 58, 237, 0.2);
     display: grid;
     gap: 16px;
-    background: linear-gradient(180deg, var(--accent-glow), transparent 55%), var(--panel);
+    background: linear-gradient(180deg, var(--accent-glow), transparent 55%), #161b22;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03);
   }
 
   .goal-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
+    position: relative;
+    padding-right: 36px;
+  }
+
+  .goal-header-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Корзина без подложки: сброс UA-стилей кнопки + только SVG с filter */
+  .goal-card .goal-header button.goal-delete {
+    all: unset;
+    box-sizing: border-box;
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    min-width: 36px;
+    min-height: 36px;
+    cursor: pointer;
+    line-height: 0;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+  }
+
+  .goal-card .goal-header button.goal-delete::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+  }
+
+  .goal-card .goal-header button.goal-delete:hover {
+    transform: scale(1.06);
+  }
+
+  .goal-card .goal-header button.goal-delete:active {
+    transform: scale(0.94);
+  }
+
+  .goal-card .goal-header button.goal-delete:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .goal-category-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .goal-category-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    flex-shrink: 0;
+    box-shadow: 0 0 8px var(--accent-soft);
   }
 
   .goal-icon {
@@ -85,19 +154,19 @@
   .goal-category {
     color: var(--muted);
     font-size: 12px;
+    margin: 0;
   }
 
   .goal-progress {
     display: grid;
-    grid-template-columns: 120px 1fr;
+    grid-template-columns: minmax(0, 140px) 1fr;
     gap: 12px;
     align-items: center;
   }
 
   .goal-ring {
-    width: 125px;
-    height: 125px;
-    padding: 8px;
+    justify-self: start;
+    padding: 0;
   }
 
   .goal-meta {
@@ -178,6 +247,7 @@
   .goal-progress-fill {
     height: 100%;
     background: var(--accent-color);
+    transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .goals-bottom {
