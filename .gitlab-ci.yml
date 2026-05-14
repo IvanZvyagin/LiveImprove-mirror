@@ -7,7 +7,31 @@ variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=2"
 
-default:
+# Пути, при изменении которых нужны Gradle-сборка и тесты бэка
+.backend_paths: &backend_paths
+  - liveimprove-app/**/*
+  - liveimprove-common/**/*
+  - liveimprove-domain/**/*
+  - liveimprove-auth/**/*
+  - liveimprove-goals/**/*
+  - liveimprove-habits/**/*
+  - liveimprove-tasks/**/*
+  - liveimprove-calendar/**/*
+  - liveimprove-interviews/**/*
+  - liveimprove-analytics/**/*
+  - liveimprove-notification/**/*
+  - liveimprove-infrastructure/**/*
+  - build.gradle.kts
+  - settings.gradle.kts
+  - gradle/**/*
+  - gradlew
+  - gradlew.bat
+  - liveimprove-app/Dockerfile
+  - .dockerignore
+
+# Только для Java/Gradle-джоб. Не класть в default — иначе frontend-джобы наследуют
+# огромный кэш .gradle и падают по таймауту/диску на SaaS runner.
+.gradle_job: &gradle_job
   image: eclipse-temurin:25-jdk
   tags:
     - saas-linux-medium-amd64
@@ -23,8 +47,18 @@ default:
       - .gradle/caches/
       - .gradle/wrapper/
 
+default:
+  interruptible: true
+
 build:
   stage: build
+  <<: *gradle_job
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: on_success
+    - changes: *backend_paths
+      when: on_success
+    - when: never
   script:
     - ./gradlew assemble -x test --no-daemon
   artifacts:
@@ -37,9 +71,15 @@ build:
 
 test:
   stage: test
+  <<: *gradle_job
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: on_success
+    - changes: *backend_paths
+      when: on_success
+    - when: never
   needs:
     - job: build
-      artifacts: true
   script:
     - ./gradlew test --no-daemon
   artifacts:
@@ -53,18 +93,24 @@ test:
 
 docker_build:
   stage: package
+  tags:
+    - saas-linux-medium-amd64
+  interruptible: true
   image:
     name: gcr.io/kaniko-project/executor:v1.23.2-debug
     entrypoint: [""]
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: on_success
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: on_success
+    - changes: *backend_paths
+      when: manual
+      allow_failure: true
+    - when: never
   needs:
     - job: test
       artifacts: false
-  rules:
-    - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_BRANCH
-      when: manual
-      allow_failure: true
   variables:
     IMAGE_NAME: "$CI_REGISTRY_IMAGE/backend"
   before_script:
@@ -85,3 +131,55 @@ docker_build:
         --cache-ttl=72h \
         --snapshot-mode=redo \
         --use-new-run
+
+# --- Frontend (Node), только при изменениях во frontend или CI ---
+# Важно: before_script и script GitLab выполняет в одном shell, cwd сохраняется.
+# Поэтому cd frontend делаем ОДИН раз в before_script, в script — bare-команды.
+.frontend_base:
+  image: node:22-alpine
+  tags:
+    - saas-linux-medium-amd64
+  interruptible: true
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: on_success
+    - changes:
+        - frontend/**/*
+        - .gitlab-ci.yml
+      when: on_success
+    - when: never
+  before_script:
+    - cd frontend
+    - npm ci --no-audit --no-fund
+
+frontend_lint:
+  extends: .frontend_base
+  stage: build
+  needs: []
+  script:
+    - npm run lint
+
+frontend_build:
+  extends: .frontend_base
+  stage: build
+  needs: []
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
+    expire_in: 1 day
+
+frontend_test:
+  extends: .frontend_base
+  stage: test
+  needs:
+    - job: frontend_build
+  script:
+    - npm run test:run

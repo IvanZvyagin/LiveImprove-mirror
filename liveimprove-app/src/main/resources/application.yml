@@ -1,7 +1,6 @@
 spring:
   application:
     name: liveimprove
-
   profiles:
     default: local
   jpa:
@@ -27,5 +26,8 @@ logging:
   level:
     root: INFO
     com.liveimprove: DEBUG
+
+# Базовое значение; профиль dev переопределяет в application-dev.yml
 app:
-  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
+  security:
+    enabled: false

@@ -1,0 +1,23 @@
+.button {
+  background: #0f1524;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #7c3aed;
+  color: white;
+  border-radius: 999px;
+  padding: 2px 4px;
+  font-size: 9px;
+}
