@@ -29,7 +29,9 @@ variables:
   - liveimprove-app/Dockerfile
   - .dockerignore
 
-.default_gradle: &default_gradle
+# Только для Java/Gradle-джоб. Не класть в default — иначе frontend-джобы наследуют
+# огромный кэш .gradle и падают по таймауту/диску на SaaS runner.
+.gradle_job: &gradle_job
   image: eclipse-temurin:25-jdk
   tags:
     - saas-linux-medium-amd64
@@ -46,10 +48,11 @@ variables:
       - .gradle/wrapper/
 
 default:
-  <<: *default_gradle
+  interruptible: true
 
 build:
   stage: build
+  <<: *gradle_job
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       when: on_success
@@ -68,6 +71,7 @@ build:
 
 test:
   stage: test
+  <<: *gradle_job
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       when: on_success
@@ -89,6 +93,9 @@ test:
 
 docker_build:
   stage: package
+  tags:
+    - saas-linux-medium-amd64
+  interruptible: true
   image:
     name: gcr.io/kaniko-project/executor:v1.23.2-debug
     entrypoint: [""]
@@ -147,6 +154,8 @@ docker_build:
 frontend_lint:
   stage: build
   image: node:22-alpine
+  tags:
+    - saas-linux-medium-amd64
   needs: []
   <<: *frontend_cache
   <<: *frontend_rules
@@ -158,6 +167,8 @@ frontend_lint:
 frontend_build:
   stage: build
   image: node:22-alpine
+  tags:
+    - saas-linux-medium-amd64
   needs: []
   <<: *frontend_cache
   <<: *frontend_rules
@@ -173,6 +184,8 @@ frontend_build:
 frontend_test:
   stage: test
   image: node:22-alpine
+  tags:
+    - saas-linux-medium-amd64
   needs:
     - job: frontend_build
   <<: *frontend_cache
