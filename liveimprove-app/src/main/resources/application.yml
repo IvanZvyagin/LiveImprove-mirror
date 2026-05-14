@@ -1,6 +1,7 @@
 spring:
   application:
     name: liveimprove
+
   profiles:
     default: local
   jpa:
@@ -26,3 +27,5 @@ logging:
   level:
     root: INFO
     com.liveimprove: DEBUG
+app:
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
