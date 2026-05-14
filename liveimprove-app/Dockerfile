@@ -17,7 +17,14 @@ RUN ./gradlew :liveimprove-app:bootJar --no-daemon -x test \
 # ---------- runtime ----------
 FROM eclipse-temurin:25-jre
 
-RUN groupadd --system app && useradd --system --gid app --home-dir /app --shell /usr/sbin/nologin app
+# В базовом образе wget мог быть удалён после установки JDK — ставим явно.
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends wget; \
+    rm -rf /var/lib/apt/lists/*; \
+    wget --version; \
+    groupadd --system app; \
+    useradd --system --gid app --home-dir /app --shell /usr/sbin/nologin app
 
 WORKDIR /app
 COPY --from=build /workspace/liveimprove-app/build/libs/*.jar /app/app.jar

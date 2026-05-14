@@ -1,6 +1,7 @@
 app:
   security:
     enabled: true
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
 
 spring:
   datasource:
@@ -17,8 +18,3 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8082/realms/liveimprove}
