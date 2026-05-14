@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react'
-import { createHabit, fetchHabits, habitsFallback, logHabit } from '../api/habits'
+import {
+  createHabit,
+  deleteHabitById,
+  fetchHabits,
+  habitsFallback,
+  logHabit,
+  type CreateHabitPayload,
+} from '../api/habits'
 import type { HabitsData } from '../types/habits'
 import { trackUiAction } from '../api/client'
 
@@ -17,8 +24,16 @@ export default function useHabits() {
     await refresh()
   }
 
-  const addHabit = async () => {
-    await createHabit()
+  const addHabit = async (payload: CreateHabitPayload) => {
+    await createHabit(payload)
+    await refresh()
+  }
+
+  const deleteHabitsByIds = async (habitIds: string[]) => {
+    if (habitIds.length === 0) {
+      return
+    }
+    await Promise.all(habitIds.map((id) => deleteHabitById(id)))
     await refresh()
   }
 
@@ -26,5 +41,5 @@ export default function useHabits() {
     await trackUiAction(action, payload)
   }
 
-  return { data, toggleHabit, addHabit, trackAction }
+  return { data, toggleHabit, addHabit, deleteHabitsByIds, trackAction }
 }

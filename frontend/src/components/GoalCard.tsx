@@ -1,13 +1,23 @@
 import type { CSSProperties } from 'react'
-import type { Goal } from '../types/goals'
+import { FW, fwNeonFilter } from '../icons/focusWayPalette'
+import { IconActionDelete, IconCategoryDumbbell, NeonWrap } from '../icons/FocusWayIcons'
+import type { Goal, GoalAccent } from '../types/goals'
 import ProgressRing from './ProgressRing'
 import Card from './ui/Card'
-import IconButton from './ui/IconButton'
+
+/** Совпадает с `accentColors` на странице целей — неон корзины = акцент карточки */
+const DELETE_NEON_BY_ACCENT: Record<GoalAccent, string> = {
+  blue: '#3b82f6',
+  green: '#22c55e',
+  orange: '#f97316',
+  purple: '#a855f7',
+}
 
 type GoalCardProps = {
   goal: Goal
   accentStyle: CSSProperties
   onToggleItem?: (goalId: string, itemId: string, done: boolean) => void
+  onDelete?: (goalId: string) => void
 }
 
 const renderGoalIcon = (icon: string, iconType: string) => {
@@ -17,23 +27,18 @@ const renderGoalIcon = (icon: string, iconType: string) => {
 
   if (iconType === 'dumbbell') {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="goal-icon-svg fill dumbbell">
-        <g transform="rotate(-32 12 12)">
-          <rect x="3" y="8.5" width="3.2" height="7" rx="1.2" />
-          <rect x="17.8" y="8.5" width="3.2" height="7" rx="1.2" />
-          <rect x="6.2" y="10.2" width="11.6" height="3.6" rx="1.8" />
-          <rect x="5.2" y="9.4" width="1.4" height="5.2" rx="0.7" />
-          <rect x="17.4" y="9.4" width="1.4" height="5.2" rx="0.7" />
-        </g>
-      </svg>
+      <NeonWrap color={FW.amber} strength="full" size={26}>
+        <IconCategoryDumbbell size={22} />
+      </NeonWrap>
     )
   }
 
   return <span>{icon}</span>
 }
 
-export default function GoalCard({ goal, accentStyle, onToggleItem }: GoalCardProps) {
+export default function GoalCard({ goal, accentStyle, onToggleItem, onDelete }: GoalCardProps) {
   const completedCount = goal.items.filter((item) => item.done).length
+  const deleteAccent = DELETE_NEON_BY_ACCENT[goal.accent]
 
   return (
     <Card as="article" className="goal-card" key={goal.id} style={accentStyle}>
@@ -41,11 +46,29 @@ export default function GoalCard({ goal, accentStyle, onToggleItem }: GoalCardPr
         <div className={`goal-icon goal-icon-${goal.iconType}`}>
           {renderGoalIcon(goal.icon, goal.iconType)}
         </div>
-        <div>
+        <div className="goal-header-text">
           <div className="goal-title">{goal.title}</div>
-          <div className="goal-category">{goal.category}</div>
+          <div className="goal-category-row">
+            <span className="goal-category-dot" aria-hidden />
+            <span className="goal-category">{goal.category}</span>
+          </div>
         </div>
-        <IconButton type="button">⋯</IconButton>
+        {onDelete && goal.id ? (
+          <button
+            type="button"
+            className="goal-delete"
+            aria-label="Удалить цель"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(goal.id)
+            }}
+          >
+            <IconActionDelete
+              size={21}
+              style={{ color: deleteAccent, filter: fwNeonFilter(deleteAccent, 'strong') }}
+            />
+          </button>
+        ) : null}
       </div>
 
       <div className="goal-progress">
@@ -54,6 +77,8 @@ export default function GoalCard({ goal, accentStyle, onToggleItem }: GoalCardPr
           label="прогресс"
           className="goal-ring"
           accentColor="var(--accent-color)"
+          trackColor="#1e293b"
+          size={128}
         />
         <div className="goal-meta">
           <div>

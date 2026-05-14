@@ -1,12 +1,26 @@
-import type { ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import type { ComponentType, ReactNode } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
+import ProfileDrawer from '../components/ProfileDrawer'
+import TopUserChip from '../components/TopUserChip'
+import { FW } from '../icons/focusWayPalette'
+import {
+  IconLogoCode,
+  IconSidebarAnalytics,
+  IconSidebarCalendar,
+  IconSidebarGoals,
+  IconSidebarHabits,
+  IconSidebarHome,
+  NeonWrap,
+} from '../icons/FocusWayIcons'
 
-const links = [
-  { to: '/', label: 'Главная', icon: '⌂' },
-  { to: '/goals', label: 'Цели', icon: '◎' },
-  { to: '/habits', label: 'Привычки', icon: '✓' },
-  { to: '/calendar', label: 'Календарь', icon: '🗓' },
-  { to: '/analytics', label: 'Аналитика', icon: '▥' },
+type NavIcon = ComponentType<{ size?: number }>
+
+const links: { to: string; label: string; Icon: NavIcon; color: string }[] = [
+  { to: '/', label: 'Главная', Icon: IconSidebarHome, color: FW.blue },
+  { to: '/goals', label: 'Цели', Icon: IconSidebarGoals, color: FW.purple },
+  { to: '/habits', label: 'Привычки', Icon: IconSidebarHabits, color: FW.green },
+  { to: '/calendar', label: 'Календарь', Icon: IconSidebarCalendar, color: FW.amber },
+  { to: '/analytics', label: 'Аналитика', Icon: IconSidebarAnalytics, color: FW.pink },
 ]
 
 type AppLayoutProps = {
@@ -14,11 +28,17 @@ type AppLayoutProps = {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
+  const { pathname } = useLocation()
+
   return (
     <div className="app">
       <aside className="sidebar">
         <div className="logo">
-          <span className="logo-mark">{'</>'}</span>
+          <div className="logo-mark" aria-hidden>
+            <NeonWrap color={FW.purple} strength="soft" size={22}>
+              <IconLogoCode size={20} />
+            </NeonWrap>
+          </div>
           <span className="logo-text">LiveImprove</span>
         </div>
         <nav className="nav">
@@ -29,27 +49,29 @@ export default function AppLayout({ children }: AppLayoutProps) {
               end={link.to === '/'}
               className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
             >
-              <span className="nav-icon">{link.icon}</span>
-              {link.label}
+              {({ isActive }) => (
+                <>
+                  <span className="nav-icon">
+                    <NeonWrap color={link.color} strength={isActive ? 'full' : 'soft'} active={isActive} size={22}>
+                      <link.Icon size={20} />
+                    </NeonWrap>
+                  </span>
+                  {link.label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
-        <div className="sidebar-card">
-          <div className="sidebar-card-title">Pro версия</div>
-          <div className="sidebar-card-text">Больше возможностей для достижения целей.</div>
-          <button className="sidebar-card-button" type="button">
-            Подробнее
-          </button>
-        </div>
-        <div className="user-card">
-          <div className="avatar">АК</div>
-          <div>
-            <div className="user-name">Алексей</div>
-            <div className="user-role">Про план</div>
-          </div>
-        </div>
       </aside>
-      <main className="content">{children}</main>
+      <main className="content">
+        <div className="app-topbar">
+          <TopUserChip />
+        </div>
+        <div key={pathname} className="page-shell">
+          {children}
+        </div>
+      </main>
+      <ProfileDrawer />
     </div>
   )
 }

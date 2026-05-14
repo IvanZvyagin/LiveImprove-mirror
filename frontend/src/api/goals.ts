@@ -1,21 +1,35 @@
 import { goalsMock } from '../mocks/goals'
 import type { GoalsData } from '../types/goals'
-import { getJson, postJson } from './client'
+import { deleteRequest, getJson, postJson } from './client'
 
 export const goalsFallback = goalsMock
+
+export type CreateGoalPayload = {
+  title: string
+  category: string
+  targetDate: string
+  description?: string
+  subGoalTitles?: string[]
+}
 
 export const fetchGoals = async (): Promise<GoalsData> => {
   return getJson('/goals', goalsMock)
 }
 
-export const createGoal = async () => {
+export const createGoal = async (payload: CreateGoalPayload) => {
   await postJson('/goals', {
-    title: 'Новая цель',
-    category: 'Личное',
-    targetDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString().slice(0, 10),
+    title: payload.title,
+    category: payload.category,
+    targetDate: payload.targetDate,
+    description: payload.description ?? '',
+    subGoalTitles: payload.subGoalTitles ?? [],
   })
 }
 
 export const toggleGoalItem = async (itemId: string, done: boolean) => {
   await postJson(`/goals/items/${itemId}/toggle`, { done })
+}
+
+export const deleteGoal = async (goalId: string) => {
+  await deleteRequest(`/goals/${goalId}`)
 }
