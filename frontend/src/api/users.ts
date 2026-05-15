@@ -1,8 +1,10 @@
-import { getJson } from './client'
 import { getAuthToken } from '../auth/authStorage'
 import type { NotificationPrefs, UserProfile } from '../auth/profileTypes'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api/v1'
+const AUTH_ME_URL =
+  import.meta.env.VITE_AUTH_ME_URL ??
+  `${API_BASE_URL.replace(/\/api\/v1\/?$/, '')}/auth/me`
 
 type RawProfile = {
   id: string
@@ -13,13 +15,11 @@ type RawProfile = {
   notifications: NotificationPrefs
 }
 
-const fallbackProfile: RawProfile = {
-  id: '',
-  email: '',
-  name: '',
-  username: null,
-  avatarDataUrl: null,
-  notifications: { email: true, push: true, habits: true, goals: true },
+type RawAuthMe = {
+  userId: string
+  email: string | null
+  phone: string | null
+  fullName: string | null
 }
 
 function toProfile(raw: RawProfile): UserProfile {
@@ -34,9 +34,29 @@ function toProfile(raw: RawProfile): UserProfile {
 }
 
 export async function fetchMe(): Promise<UserProfile | null> {
-  const raw = await getJson<RawProfile>('/users/me', fallbackProfile)
-  if (!raw.id) return null
-  return toProfile(raw)
+  const token = getAuthToken()
+  if (!token) return null
+
+  try {
+    const response = await fetch(AUTH_ME_URL, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    if (!response.ok) return null
+    const raw = (await response.json()) as RawAuthMe
+    if (!raw.userId) return null
+    return {
+      id: raw.userId,
+      email: raw.email ?? '',
+      name: raw.fullName ?? raw.email ?? 'Пользователь',
+      username: null,
+      avatarDataUrl: null,
+      notifications: { email: true, push: false, habits: true, goals: true },
+    }
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -48,9 +68,7 @@ async function putJsonStrict<T>(path: string, body: unknown): Promise<T> {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      ...(token
-        ? { 'X-User-Id': token, Authorization: `Bearer ${token}` }
-        : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(body),
   })

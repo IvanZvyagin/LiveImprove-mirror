@@ -1,6 +1,6 @@
 /**
  * Хранение текущего пользователя в localStorage.
- * Простейший вариант: токен = id пользователя, его же передаём в заголовке X-User-Id.
+ * Поле token — Supabase access JWT, который отправляется в Authorization: Bearer.
  */
 
 export type AuthUser = {

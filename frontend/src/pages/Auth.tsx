@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { OAUTH_RETURN_STORAGE_KEY } from '../auth/oauth'
+import { supabase } from '../lib/supabaseClient'
 import styles from './Auth.module.css'
 
 type Tab = 'login' | 'register'
@@ -40,6 +42,34 @@ export default function Auth() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleOAuth = async (provider: 'google' | 'github') => {
+    if (submitting) return
+    setError(null)
+    setSubmitting(true)
+    try {
+      const returnTo = location.state?.from?.pathname ?? '/'
+      sessionStorage.setItem(OAUTH_RETURN_STORAGE_KEY, returnTo)
+      const origin = window.location.origin
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${origin}/auth/callback`,
+        },
+      })
+      if (oauthError) {
+        setError(oauthError.message)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось начать вход')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleUnimplementedSocial = () => {
+    setError('Этот способ входа пока недоступен')
   }
 
   return (
@@ -142,20 +172,20 @@ export default function Auth() {
           <span>Или войти через</span>
         </div>
 
-        <div className={styles.socials} aria-hidden>
-          <SocialButton label="VK">
+        <div className={styles.socials} role="group" aria-label="Вход через соцсети">
+          <SocialButton label="VK" onClick={handleUnimplementedSocial}>
             <VkIcon />
           </SocialButton>
-          <SocialButton label="Telegram">
+          <SocialButton label="Telegram" onClick={handleUnimplementedSocial}>
             <TelegramIcon />
           </SocialButton>
-          <SocialButton label="Google">
+          <SocialButton label="Google" disabled={submitting} onClick={() => void handleOAuth('google')}>
             <GoogleIcon />
           </SocialButton>
-          <SocialButton label="Yandex">
+          <SocialButton label="Yandex" onClick={handleUnimplementedSocial}>
             <YandexIcon />
           </SocialButton>
-          <SocialButton label="GitHub">
+          <SocialButton label="GitHub" disabled={submitting} onClick={() => void handleOAuth('github')}>
             <GithubIcon />
           </SocialButton>
         </div>
@@ -164,9 +194,25 @@ export default function Auth() {
   )
 }
 
-function SocialButton({ label, children }: { label: string; children: React.ReactNode }) {
+function SocialButton({
+  label,
+  onClick,
+  disabled,
+  children,
+}: {
+  label: string
+  onClick?: () => void
+  disabled?: boolean
+  children: React.ReactNode
+}) {
   return (
-    <button type="button" className={styles.socialButton} aria-label={`Войти через ${label}`}>
+    <button
+      type="button"
+      className={styles.socialButton}
+      aria-label={`Войти через ${label}`}
+      onClick={onClick}
+      disabled={disabled}
+    >
       {children}
     </button>
   )

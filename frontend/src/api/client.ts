@@ -2,12 +2,11 @@ import { getAuthToken } from '../auth/authStorage'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api/v1'
 
-/** Заголовки: X-User-Id используется бэкендом для определения текущего пользователя. */
+/** Добавляем Bearer JWT (Supabase access token) к API-запросам. */
 function authHeaders(extra?: Record<string, string>): Record<string, string> {
   const headers: Record<string, string> = { ...(extra ?? {}) }
   const token = getAuthToken()
   if (token) {
-    headers['X-User-Id'] = token
     headers['Authorization'] = `Bearer ${token}`
   }
   return headers
