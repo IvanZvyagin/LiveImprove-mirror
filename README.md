@@ -11,6 +11,10 @@
 5. Запустить приложение: `./gradlew :liveimprove-app:bootRun --args='--spring.profiles.active=local'`
 6. Swagger UI будет доступен по адресу http://localhost:8080/swagger-ui.html после реализации.
 
+## Тестирование JWT (шаг 6)
+
+См. [docs/STEP6-TESTING.md](docs/STEP6-TESTING.md) — Postgres/Redis, профиль `dev`, `SUPABASE_ISSUER_URI`, вызов `GET /auth/me`.
+
 ### Фронтенд (локально)
 
 ```bash

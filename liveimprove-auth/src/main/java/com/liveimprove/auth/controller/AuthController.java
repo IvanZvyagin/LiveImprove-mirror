@@ -28,6 +28,14 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Требуется Bearer JWT (Supabase access token)");
         }
         String userId = claimsExtractor.getUserId(jwt);
-        return userProfileService.getUserInfo(userId);
+        UserInfo base = userProfileService.getUserInfo(userId);
+        String email = claimsExtractor.getEmail(jwt);
+        String phone = claimsExtractor.getPhone(jwt);
+        String fullName = claimsExtractor.getFullName(jwt);
+        return new UserInfo(
+                userId,
+                email != null ? email : base.email(),
+                phone != null ? phone : base.phone(),
+                fullName != null ? fullName : base.fullName());
     }
 }
