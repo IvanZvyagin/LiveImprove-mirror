@@ -1,41 +1,25 @@
 package com.liveimprove.auth.controller;
 
+import com.liveimprove.auth.service.AuthUserInfoService;
 import com.liveimprove.common.dto.UserInfo;
-import com.liveimprove.common.security.JwtClaimsExtractor;
-import com.liveimprove.domain.spi.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/auth")
 @Slf4j
 @RequiredArgsConstructor
 public class AuthController {
-    private final UserProfileService userProfileService;
-    private final JwtClaimsExtractor claimsExtractor;
+    private final AuthUserInfoService authUserInfoService;
 
 
     @GetMapping("/me")
     public UserInfo me(@AuthenticationPrincipal Jwt jwt) {
-        if (jwt == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Требуется Bearer JWT (Supabase access token)");
-        }
-        String userId = claimsExtractor.getUserId(jwt);
-        UserInfo base = userProfileService.getUserInfo(userId);
-        String email = claimsExtractor.getEmail(jwt);
-        String phone = claimsExtractor.getPhone(jwt);
-        String fullName = claimsExtractor.getFullName(jwt);
-        return new UserInfo(
-                userId,
-                email != null ? email : base.email(),
-                phone != null ? phone : base.phone(),
-                fullName != null ? fullName : base.fullName());
+        return authUserInfoService.resolveUserInfo(jwt);
     }
 }
