@@ -28,6 +28,10 @@ Dev-сервер Vite проксирует `/api` на `http://localhost:8080` (
 
 ### Всё в Docker (демо UI + API, H2)
 
+Сборка фронта на **Vite** вшивает переменные окружения на этапе `docker build`. В корне репозитория скопируйте `.env.example` в `.env` и заполните **`VITE_SUPABASE_URL`** и **`VITE_SUPABASE_ANON_KEY`** (из Supabase Dashboard → Settings → API). Без них приложение на `/auth` упадёт с ошибкой про отсутствие ключей.
+
+Для входа через Google/GitHub в Supabase добавьте redirect URL: `http://localhost:5173/auth/callback`.
+
 ```bash
 docker compose -f docker-compose.dev.yml up --build
 ```

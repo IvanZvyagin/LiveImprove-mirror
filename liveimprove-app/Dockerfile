@@ -7,11 +7,13 @@ WORKDIR /workspace
 
 COPY gradlew settings.gradle.kts build.gradle.kts ./
 COPY gradle ./gradle
-RUN chmod +x ./gradlew && ./gradlew --version --no-daemon
+# Убираем CRLF из контекста сборки на Windows — иначе ./gradlew в Linux даёт «not found».
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew && ./gradlew --version --no-daemon
 
 COPY . .
 
-RUN ./gradlew :liveimprove-app:bootJar --no-daemon -x test \
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew \
+    && ./gradlew :liveimprove-app:bootJar --no-daemon -x test \
     && rm -f liveimprove-app/build/libs/*-plain.jar
 
 # ---------- runtime ----------
