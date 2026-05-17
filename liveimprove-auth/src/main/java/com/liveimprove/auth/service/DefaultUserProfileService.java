@@ -2,11 +2,9 @@ package com.liveimprove.auth.service;
 
 import com.liveimprove.auth.entity.UserProfileEntity;
 import com.liveimprove.auth.repository.UserProfileRepository;
-import com.liveimprove.common.security.JwtClaimsExtractor;
 import com.liveimprove.common.dto.UserInfo;
 import com.liveimprove.domain.spi.UserProfileService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 @Service

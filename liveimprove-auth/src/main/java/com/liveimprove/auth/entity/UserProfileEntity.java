@@ -1,7 +1,6 @@
 package com.liveimprove.auth.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
