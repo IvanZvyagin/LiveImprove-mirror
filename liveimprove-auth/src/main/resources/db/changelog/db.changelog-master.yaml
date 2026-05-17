@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: v1.0/002-create-user-profiles-table.yaml
+      relativeToChangelogFile: true
