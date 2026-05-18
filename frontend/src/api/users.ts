@@ -2,34 +2,29 @@ import { getAuthToken } from '../auth/authStorage'
 import type { NotificationPrefs, UserProfile } from '../auth/profileTypes'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api/v1'
-const AUTH_ME_URL =
-  import.meta.env.VITE_AUTH_ME_URL ??
-  `${API_BASE_URL.replace(/\/api\/v1\/?$/, '')}/auth/me`
+const USERS_API_BASE_URL =
+  import.meta.env.VITE_USERS_API_URL ?? API_BASE_URL.replace(/\/api\/v1\/?$/, '')
 
 type RawProfile = {
-  id: string
+  userId?: string
+  id?: string
   email: string
   name: string
   username: string | null
   avatarDataUrl: string | null
-  notifications: NotificationPrefs
-}
-
-type RawAuthMe = {
-  userId: string
-  email: string | null
-  phone: string | null
-  fullName: string | null
+  notification?: NotificationPrefs
+  notifications?: NotificationPrefs
 }
 
 function toProfile(raw: RawProfile): UserProfile {
+  const notifications = raw.notification ?? raw.notifications
   return {
-    id: raw.id,
+    id: raw.userId ?? raw.id ?? '',
     email: raw.email,
     name: raw.name,
     username: raw.username ?? null,
     avatarDataUrl: raw.avatarDataUrl ?? null,
-    notifications: raw.notifications,
+    notifications: notifications ?? { email: true, push: true, habits: true, goals: true },
   }
 }
 
@@ -38,22 +33,15 @@ export async function fetchMe(): Promise<UserProfile | null> {
   if (!token) return null
 
   try {
-    const response = await fetch(AUTH_ME_URL, {
+    const response = await fetch(`${USERS_API_BASE_URL}/users/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
     if (!response.ok) return null
-    const raw = (await response.json()) as RawAuthMe
-    if (!raw.userId) return null
-    return {
-      id: raw.userId,
-      email: raw.email ?? '',
-      name: raw.fullName ?? raw.email ?? 'Пользователь',
-      username: null,
-      avatarDataUrl: null,
-      notifications: { email: true, push: false, habits: true, goals: true },
-    }
+    const raw = (await response.json()) as RawProfile
+    if (!raw.userId && !raw.id) return null
+    return toProfile(raw)
   } catch {
     return null
   }
@@ -64,7 +52,7 @@ export async function fetchMe(): Promise<UserProfile | null> {
  */
 async function putJsonStrict<T>(path: string, body: unknown): Promise<T> {
   const token = getAuthToken()
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${USERS_API_BASE_URL}${path}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -100,14 +88,10 @@ export async function updateProfileRequest(payload: {
   return toProfile(raw)
 }
 
-export async function changePasswordRequest(payload: {
-  currentPassword: string
-  newPassword: string
-}): Promise<void> {
-  await putJsonStrict<void>('/users/me/password', payload)
-}
-
 export async function updateAvatarRequest(avatarDataUrl: string | null): Promise<UserProfile> {
+  if (avatarDataUrl == null) {
+    throw new Error('Удаление аватара пока не поддерживается сервером')
+  }
   const raw = await putJsonStrict<RawProfile>('/users/me/avatar', { avatarDataUrl })
   return toProfile(raw)
 }

@@ -2,7 +2,6 @@ import type { Session } from '@supabase/supabase-js'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
-  changePasswordRequest,
   fetchMe,
   updateAvatarRequest,
   updateNotificationsRequest,
@@ -74,15 +73,6 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-function applySessionFromProfile(profile: UserProfile): AuthUser {
-  return {
-    id: profile.id,
-    email: profile.email,
-    name: profile.name,
-    token: profile.id,
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => readAuthUser())
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -95,19 +85,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const persist = useCallback((next: UserProfile) => {
-    const session = applySessionFromProfile(next)
-    writeAuthUser(session)
-    setUser(session)
     setProfile(next)
+    setUser((prev) => {
+      if (!prev) return prev
+      const updated: AuthUser = {
+        ...prev,
+        id: next.id,
+        email: next.email,
+        name: next.name,
+      }
+      writeAuthUser(updated)
+      return updated
+    })
   }, [])
 
   const refreshProfile = useCallback(async () => {
     if (!user) return
     const next = await fetchMe()
     if (next) {
-      setProfile(next)
+      persist(next)
     }
-  }, [user])
+  }, [user, persist])
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data: { session } }) => {
@@ -144,8 +142,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!data.session) throw new Error('Нет сессии после входа')
     applySupabaseSession(data.session)
     const next = await fetchMe()
-    if (next) setProfile(next)
-  }, [applySupabaseSession])
+    if (next) persist(next)
+  }, [applySupabaseSession, persist])
 
   const register = useCallback(async (email: string, password: string, name?: string) => {
     const { data, error } = await supabase.auth.signUp({
@@ -157,13 +155,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (data.session) {
       applySupabaseSession(data.session)
       const next = await fetchMe()
-      if (next) setProfile(next)
+      if (next) persist(next)
     } else {
       throw new Error(
         'Аккаунт создан. Если в Supabase включено подтверждение email — перейдите по ссылке из письма, затем войдите.',
       )
     }
-  }, [applySupabaseSession])
+  }, [applySupabaseSession, persist])
 
   const logout = useCallback(async () => {
     await supabase.auth.signOut()
@@ -182,9 +180,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const changePassword = useCallback(
     async (currentPassword: string, newPassword: string) => {
-      await changePasswordRequest({ currentPassword, newPassword })
+      if (!user?.email) {
+        throw new Error('Не удалось определить email текущего пользователя')
+      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      })
+      if (signInError) {
+        throw new Error('Текущий пароль неверный')
+      }
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
+      if (updateError) {
+        throw new Error(updateError.message)
+      }
     },
-    [],
+    [user],
   )
 
   const updateAvatar = useCallback(
