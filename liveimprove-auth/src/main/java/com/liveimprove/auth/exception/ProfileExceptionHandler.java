@@ -14,13 +14,13 @@ public class ProfileExceptionHandler {
     @ExceptionHandler(ProfileNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ProfileNotFoundException ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse("Профиль не найден", "PROFILE_NOT_FOUND"));
+                .body(new ErrorResponse(ex.getMessage(), "PROFILE_NOT_FOUND"));
     }
 
     @ExceptionHandler(UsernameAlreadyTakenException.class)
     public ResponseEntity<ErrorResponse> handleConflict(UsernameAlreadyTakenException ex){
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse("Имя пользователя занято", "USERNAME_ALREADY_TAKEN"));
+                .body(new ErrorResponse(ex.getMessage(), "USERNAME_ALREADY_TAKEN"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
