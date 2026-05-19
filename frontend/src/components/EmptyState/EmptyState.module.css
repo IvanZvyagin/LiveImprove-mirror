@@ -1,0 +1,110 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 64px 24px 48px;
+  min-height: 60vh;
+  gap: 8px;
+}
+
+.illustration {
+  position: relative;
+  width: min(560px, 72vw);
+  max-width: 100%;
+  aspect-ratio: 3 / 2;
+  display: grid;
+  place-items: center;
+  margin-bottom: 10px;
+}
+
+.illustration::before {
+  content: '';
+  position: absolute;
+  inset: 22% 18%;
+  background: radial-gradient(circle, rgba(121, 87, 255, 0.3) 0%, rgba(63, 184, 255, 0.08) 45%, transparent 72%);
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+.illustration > * {
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  margin: 16px 0 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  max-width: 460px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.action {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  background:
+    linear-gradient(120deg, #9b5cff 0%, #6d5cff 45%, #3fb8ff 100%);
+  box-shadow:
+    0 12px 32px rgba(155, 92, 255, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.action:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 38px rgba(155, 92, 255, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  filter: brightness(1.06);
+}
+
+.action:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+
+.action svg {
+  width: 18px;
+  height: 18px;
+}
+
+.hint {
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.hint b {
+  color: var(--text-primary);
+  font-weight: 600;
+}

@@ -7,17 +7,26 @@ WORKDIR /workspace
 
 COPY gradlew settings.gradle.kts build.gradle.kts ./
 COPY gradle ./gradle
-RUN chmod +x ./gradlew && ./gradlew --version --no-daemon
+# Убираем CRLF из контекста сборки на Windows — иначе ./gradlew в Linux даёт «not found».
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew && ./gradlew --version --no-daemon
 
 COPY . .
 
-RUN ./gradlew :liveimprove-app:bootJar --no-daemon -x test \
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew \
+    && ./gradlew :liveimprove-app:bootJar --no-daemon -x test \
     && rm -f liveimprove-app/build/libs/*-plain.jar
 
 # ---------- runtime ----------
 FROM eclipse-temurin:25-jre
 
-RUN groupadd --system app && useradd --system --gid app --home-dir /app --shell /usr/sbin/nologin app
+# В базовом образе wget мог быть удалён после установки JDK — ставим явно.
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends wget; \
+    rm -rf /var/lib/apt/lists/*; \
+    wget --version; \
+    groupadd --system app; \
+    useradd --system --gid app --home-dir /app --shell /usr/sbin/nologin app
 
 WORKDIR /app
 COPY --from=build /workspace/liveimprove-app/build/libs/*.jar /app/app.jar

@@ -26,3 +26,13 @@ logging:
   level:
     root: INFO
     com.liveimprove: DEBUG
+
+# Базовое значение; профиль dev переопределяет в application-dev.yml
+app:
+  security:
+    enabled: false
+
+# --- Supabase JWT (профиль dev; детали в liveimprove-auth/application.yml) ---
+# Задайте в окружении при запуске Spring:
+#   SUPABASE_ISSUER_URI=https://<project-ref>.supabase.co/auth/v1   (без слеша в конце; совпадает с iss в токене)
+#   FRONTEND_ORIGIN=http://localhost:5173

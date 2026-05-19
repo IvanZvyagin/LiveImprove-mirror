@@ -1,0 +1,10 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SUPABASE_ISSUER_URI:https://pevipmeoruuxqtdraqvr.supabase.co/auth/v1}
+          jwk-set-uri: ${SUPABASE_ISSUER_URI:https://pevipmeoruuxqtdraqvr.supabase.co/auth/v1}/.well-known/jwks.json
+
+app:
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}

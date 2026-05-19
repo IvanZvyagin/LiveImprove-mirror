@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: changes/001-create-goals-tables.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/002-create-user-profiles-table.yaml
+      relativeToChangelogFile: true

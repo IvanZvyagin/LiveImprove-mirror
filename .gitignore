@@ -28,9 +28,19 @@ docker-compose.override.yml
 .env
 *.env.local
 *.env.*.local
-application-local.yml
-src/main/resources/application-local.yml
+# Локальные переопределения (шаблон application-local.yml — в репозитории)
+application-local.override.yml
+**/application-local.override.yml
 
 ### Logs ###
 logs/
 *.log
+
+### Frontend ###
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
