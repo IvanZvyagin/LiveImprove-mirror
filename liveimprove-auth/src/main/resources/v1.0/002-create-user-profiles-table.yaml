@@ -1,0 +1,70 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-user-profiles-table
+      author: IvanZvyagin
+      changes:
+        - createTable:
+            tableName: user_profiles
+            columns:
+              - column:
+                  name: user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  name: username
+                  type: VARCHAR(100)
+                  constraints:
+                    unique: true
+                    nullable: true
+              - column:
+                  name: avatar_data_url
+                  type: TEXT
+              - column:
+                  name: notif_email
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+              - column:
+                  name: notif_push
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+              - column:
+                  name: notif_habits
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+              - column:
+                  name: notif_goals
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: idx_user_profiles_username
+            tableName: user_profiles
+            unique: true
+            columns:
+              - column:
+                  name: username
+
+        - createIndex:
+            indexName: idx_user_profiles_email
+            tableName: user_profiles
+            columns:
+              - column:
+                  name: email
