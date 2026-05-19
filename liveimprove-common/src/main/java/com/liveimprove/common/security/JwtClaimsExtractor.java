@@ -4,12 +4,17 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class JwtClaimsExtractor {
 
     public String getUserId(Jwt jwt) {
         return jwt.getSubject();
+    }
+
+    public UUID getUserIdAsUuid(Jwt jwt) {
+        return UUID.fromString(getUserId(jwt));
     }
 
     public String getEmail(Jwt jwt) {
@@ -20,14 +25,14 @@ public class JwtClaimsExtractor {
         return jwt.getClaimAsString("phone");
     }
 
-    /**
-     * Supabase кладёт произвольные поля в {@code user_metadata} (объект, не плоский claim с точкой).
-     */
     public String getFullName(Jwt jwt) {
-        Object raw = jwt.getClaim("user_metadata");
-        if (raw instanceof Map<?, ?> map) {
-            Object name = map.get("full_name");
-            return name != null ? name.toString() : null;
+        return fullNameFromMetadata(jwt);
+    }
+
+    private String fullNameFromMetadata(Jwt jwt) {
+        Object userMetadata = jwt.getClaim("user_metadata");
+        if (userMetadata instanceof Map<?, ?> map && map.get("full_name") instanceof String fullName) {
+            return fullName;
         }
         return jwt.getClaimAsString("name");
     }

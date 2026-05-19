@@ -11,8 +11,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
@@ -28,6 +27,8 @@ import java.util.UUID;
 @Table(name = "goals")
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class GoalEntity {
 
     @Id

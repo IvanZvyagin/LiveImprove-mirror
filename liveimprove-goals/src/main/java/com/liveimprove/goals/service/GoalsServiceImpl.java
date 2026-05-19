@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -54,13 +55,18 @@ public class GoalsServiceImpl implements GoalsService {
     @Override
     @Transactional
     public void createGoal(UUID userId, CreateGoalRequest request) {
-        GoalEntity goal = new GoalEntity();
-        goal.setUserId(userId);
-        goal.setTitle(request.title().trim());
-        goal.setCategory(request.category().trim());
-        goal.setDescription(blankToNull(request.description()));
-        goal.setTargetDate(request.targetDate());
-        goal.setStatus(GoalStatus.ACTIVE);
+        GoalEntity goal = new GoalEntity(
+                null,
+                userId,
+                request.title().trim(),
+                request.category().trim(),
+                blankToNull(request.description()),
+                request.targetDate(),
+                GoalStatus.ACTIVE,
+                null,
+                null,
+                new ArrayList<>()
+        );
 
         List<String> titles = request.subGoalTitles().stream()
                 .map(String::trim)
