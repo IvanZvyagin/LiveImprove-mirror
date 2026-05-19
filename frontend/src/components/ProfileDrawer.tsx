@@ -470,27 +470,30 @@ function AvatarPanel({
     }
   }
 
-  const onRemove = async () => {
-    setError(null)
-    setSuccess(null)
-    setSubmitting(true)
-    try {
-      await updateAvatar(null)
-      setSuccess('Аватар удалён')
-    } catch (err) {
-      setError(err instanceof Error && err.message ? err.message : 'Не удалось удалить аватар')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
   const onSaveText = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError(null)
     setSuccess(null)
+    const normalizedName = name.trim()
+    const rawUsername = username.trim()
+    const normalizedUsername = rawUsername.startsWith('@') ? rawUsername.slice(1) : rawUsername
+    if (normalizedUsername.length > 0) {
+      if (normalizedUsername.length < 3 || normalizedUsername.length > 100) {
+        setError('Логин должен быть от 3 до 100 символов')
+        return
+      }
+      if (!/^[a-zA-Z0-9_-]+$/.test(normalizedUsername)) {
+        setError('Логин может содержать только буквы, цифры, _ и -')
+        return
+      }
+    }
     setSubmitting(true)
     try {
-      await updateProfile({ name: name.trim(), username: username.trim() })
+      await updateProfile({
+        name: normalizedName || undefined,
+        username: normalizedUsername || undefined,
+      })
+      setUsername(normalizedUsername)
       setSuccess('Профиль обновлён')
     } catch (err) {
       setError(err instanceof Error && err.message ? err.message : 'Не удалось сохранить')
@@ -516,16 +519,6 @@ function AvatarPanel({
           <button type="button" className={styles.avatarBtn} onClick={onPick} disabled={submitting}>
             Загрузить фото
           </button>
-          {avatar ? (
-            <button
-              type="button"
-              className={`${styles.avatarBtn} ${styles.danger}`}
-              onClick={onRemove}
-              disabled={submitting}
-            >
-              Удалить
-            </button>
-          ) : null}
           <input
             ref={fileInputRef}
             type="file"
@@ -557,7 +550,7 @@ function AvatarPanel({
             className={styles.input}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="username"
+            placeholder="@username"
           />
         </div>
         <button type="submit" className={styles.submit} disabled={submitting}>
