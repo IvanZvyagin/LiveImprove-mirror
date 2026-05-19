@@ -1,0 +1,123 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-goals-tables
+      author: codex
+      changes:
+        - createTable:
+            tableName: goals
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(500)
+              - column:
+                  name: target_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: ACTIVE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed_at
+                  type: DATE
+        - createIndex:
+            tableName: goals
+            indexName: idx_goals_user_id
+            columns:
+              - column:
+                  name: user_id
+
+        - createTable:
+            tableName: goal_items
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: goal_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(300)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: is_completed
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: order_index
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: goal_items
+            baseColumnNames: goal_id
+            referencedTableName: goals
+            referencedColumnNames: id
+            constraintName: fk_goal_items_goal_id
+            onDelete: CASCADE
+        - createIndex:
+            tableName: goal_items
+            indexName: idx_goal_items_goal_id
+            columns:
+              - column:
+                  name: goal_id
+        - createIndex:
+            tableName: goal_items
+            indexName: idx_goal_items_order_index
+            columns:
+              - column:
+                  name: order_index
