@@ -1,6 +1,8 @@
 import './Goals.module.css'
 import type { CSSProperties } from 'react'
+import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ConfirmDialog from '../components/ConfirmDialog'
 import CompletedGoalRow from '../components/CompletedGoalRow'
 import EmptyState from '../components/EmptyState/EmptyState'
 import GoalTargetIcon from '../components/EmptyState/icons/GoalTargetIcon'
@@ -12,6 +14,15 @@ import IconButton from '../components/ui/IconButton'
 import SectionHeader from '../components/ui/SectionHeader'
 import Card from '../components/ui/Card'
 import useGoals from '../hooks/useGoals'
+
+type DialogState = {
+  open: boolean
+  title: string
+  description: string
+  confirmText: string
+  variant: 'default' | 'danger'
+  onConfirm: () => Promise<void>
+}
 
 const accentColors = {
   blue: {
@@ -71,21 +82,64 @@ const buildSparkline = (values: readonly number[], width: number, height: number
   return { width, height, points, smoothPath }
 }
 
+const DIALOG_CLOSED: DialogState = {
+  open: false,
+  title: '',
+  description: '',
+  confirmText: 'Подтвердить',
+  variant: 'default',
+  onConfirm: async () => {},
+}
+
 export default function Goals() {
   const navigate = useNavigate()
-  const { data: goals, toggleItem, removeGoal, trackAction } = useGoals()
+  const { data: goals, toggleItem, removeGoal, finishGoal, pauseGoalById, resumeGoalById, trackAction } = useGoals()
 
-  const handleDeleteGoal = async (goalId: string) => {
-    if (!window.confirm('Удалить эту цель? Все подцели будут удалены.')) return
-    const ok = await removeGoal(goalId)
-    if (ok) {
-      await trackAction('goals.deleted', goalId)
-    } else {
-      window.alert(
-        'Не удалось удалить цель. Убедитесь, что backend запущен (например localhost:8080), перезапустите его и обновите страницу.',
-      )
-    }
-  }
+  const [dialog, setDialog] = useState<DialogState>(DIALOG_CLOSED)
+  const closeDialog = useCallback(() => setDialog(DIALOG_CLOSED), [])
+
+  const handleDialogConfirm = useCallback(async () => {
+    closeDialog()
+    await dialog.onConfirm()
+  }, [dialog, closeDialog])
+
+  const handleDeleteGoal = useCallback((goalId: string) => {
+    setDialog({
+      open: true,
+      title: 'Удалить цель?',
+      description: 'Это действие нельзя отменить. Все подцели будут удалены.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+      onConfirm: async () => {
+        await removeGoal(goalId)
+        await trackAction('goals.deleted', goalId)
+      },
+    })
+  }, [removeGoal, trackAction])
+
+  const handleCompleteGoal = useCallback((goalId: string) => {
+    setDialog({
+      open: true,
+      title: 'Завершить цель?',
+      description: 'Цель будет помечена как выполненная.',
+      confirmText: 'Завершить',
+      variant: 'default',
+      onConfirm: async () => {
+        await finishGoal(goalId)
+        await trackAction('goals.completed', goalId)
+      },
+    })
+  }, [finishGoal, trackAction])
+
+  const handlePauseGoal = useCallback(async (goalId: string) => {
+    await pauseGoalById(goalId)
+    await trackAction('goals.paused', goalId)
+  }, [pauseGoalById, trackAction])
+
+  const handleResumeGoal = useCallback(async (goalId: string) => {
+    await resumeGoalById(goalId)
+    await trackAction('goals.resumed', goalId)
+  }, [resumeGoalById, trackAction])
   const statsChart = buildSparkline(goals.stats.trend, 220, 70)
   const isEmpty = goals.goals.length === 0 && goals.completed.length === 0
 
@@ -190,6 +244,9 @@ export default function Goals() {
                   accentStyle={accentStyle}
                   onToggleItem={(_, itemId, done) => toggleItem(itemId, done)}
                   onDelete={handleDeleteGoal}
+                  onComplete={handleCompleteGoal}
+                  onPause={handlePauseGoal}
+                  onResume={handleResumeGoal}
                 />
               )
             })}
@@ -262,6 +319,16 @@ export default function Goals() {
           </section>
         </>
       )}
+
+      <ConfirmDialog
+        open={dialog.open}
+        title={dialog.title}
+        description={dialog.description}
+        confirmText={dialog.confirmText}
+        variant={dialog.variant}
+        onConfirm={handleDialogConfirm}
+        onCancel={closeDialog}
+      />
     </div>
   )
 }

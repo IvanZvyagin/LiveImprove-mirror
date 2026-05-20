@@ -28,6 +28,16 @@ public interface GoalsService {
     void createGoal(UUID userId, CreateGoalRequest request);
 
     /**
+     * Поставить цель на паузу
+     */
+    void pauseGoal(UUID userId, UUID goalId);
+
+    /**
+     * Снять Цель с паузы
+     */
+    void resumeGoal(UUID userId, UUID goalId);
+
+    /**
      * Переключить статус выполнения подцели.
      *
      * @param userId идентификатор текущего пользователя
@@ -43,4 +53,11 @@ public interface GoalsService {
      * @param goalId идентификатор цели
      */
     void deleteGoal(UUID userId, UUID goalId);
+
+    /**
+     * Завершить цель под подцелей
+     * @param userId
+     * @param goalId
+     */
+    void completeGoal(UUID userId, UUID goalId);
 }

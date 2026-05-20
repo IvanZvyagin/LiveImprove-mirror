@@ -55,6 +55,17 @@ export const postJson = async <T>(
   }
 }
 
+export const patchRequest = async (path: string): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+  })
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '')
+    throw new Error(`Patch failed: ${response.status}${detail ? ` ${detail}` : ''}`)
+  }
+}
+
 export const deleteRequest = async (path: string): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: 'DELETE',

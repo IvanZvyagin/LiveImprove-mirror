@@ -15,10 +15,17 @@ public interface GoalRepository extends JpaRepository<GoalEntity, UUID> {
     List<GoalEntity> findAllByUserIdAndStatusOrderByCreatedAtDesc(UUID userId, GoalStatus status);
 
     @EntityGraph(attributePaths = "items")
+    List<GoalEntity> findAllByUserIdAndStatusInOrderByCreatedAtDesc(UUID userId, List<GoalStatus> statuses);
+
+    @EntityGraph(attributePaths = "items")
     Optional<GoalEntity> findByIdAndUserId(UUID id, UUID userId);
 
+    /**
+     * Незавершенные цели пользователя: активные и на паузе.
+     */
     default List<GoalEntity> findActiveByUserId(UUID userId) {
-        return findAllByUserIdAndStatusOrderByCreatedAtDesc(userId, GoalStatus.ACTIVE);
+        return findAllByUserIdAndStatusInOrderByCreatedAtDesc(
+                userId, List.of(GoalStatus.ACTIVE, GoalStatus.PAUSED));
     }
 
     default List<GoalEntity> findCompletedByUserId(UUID userId) {

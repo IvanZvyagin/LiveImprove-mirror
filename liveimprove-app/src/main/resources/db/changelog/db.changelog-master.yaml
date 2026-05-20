@@ -5,3 +5,6 @@ databaseChangeLog:
   - include:
       file: changes/002-create-user-profiles-table.yaml
       relativeToChangelogFile: true
+  - include:
+     file: changes/003-alter-goals-add-pause.yaml
+     relativeToChangelogFile: true

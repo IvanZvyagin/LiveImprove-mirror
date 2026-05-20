@@ -1074,6 +1074,72 @@ body::after {
   display: grid;
   gap: 16px;
   background: linear-gradient(180deg, var(--accent-glow), transparent 55%), var(--panel);
+  transition: border-color 220ms ease, background 220ms ease;
+  position: relative;
+}
+
+.goal-badge--floating {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+}
+
+.goal-card-body {
+  display: grid;
+  gap: 16px;
+  transition: opacity 220ms ease, filter 220ms ease;
+}
+
+/* ── PAUSED: гасим тело карточки, но кнопки и бейдж не трогаем ── */
+.goal-card--paused {
+  --accent-color: #64748b;
+  --accent-glow: rgba(100, 116, 139, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.goal-card--paused .goal-card-body {
+  opacity: 0.55;
+  filter: grayscale(0.7);
+}
+
+/* Перебиваем яркие фоны спец-иконок ($ и 🏋️) серым градиентом */
+.goal-card--paused .goal-icon,
+.goal-card--paused .goal-icon-dollar,
+.goal-card--paused .goal-icon-dumbbell {
+  background: linear-gradient(135deg, #475569, #64748b);
+  box-shadow: none;
+}
+
+.goal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.goal-badge--paused {
+  background: rgba(100, 116, 139, 0.22);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+}
+
+.goal-badge--completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.goal-no-subgoals {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  font-style: italic;
 }
 
 .goal-header {
@@ -1130,6 +1196,89 @@ body::after {
   outline: 2px solid var(--accent-color);
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+/* ── Ряд действий внизу карточки цели ── */
+.goal-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 12px;
+  margin-top: 2px;
+}
+
+.goal-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  white-space: nowrap;
+}
+
+.goal-action-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.goal-action-btn:active {
+  transform: translateY(0);
+}
+
+.goal-action-btn:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.goal-action-btn--complete {
+  color: var(--accent-green);
+  border-color: rgba(54, 230, 165, 0.35);
+}
+
+.goal-action-btn--complete:hover {
+  background: var(--accent-green-soft);
+  border-color: var(--accent-green);
+}
+
+.goal-action-btn--pause {
+  color: var(--accent-amber);
+  border-color: rgba(255, 181, 71, 0.35);
+}
+
+.goal-action-btn--pause:hover {
+  background: rgba(255, 181, 71, 0.12);
+  border-color: var(--accent-amber);
+}
+
+.goal-action-btn--resume {
+  color: var(--accent-green);
+  border-color: rgba(54, 230, 165, 0.35);
+}
+
+.goal-action-btn--resume:hover {
+  background: var(--accent-green-soft);
+  border-color: var(--accent-green);
+}
+
+.goal-action-btn--delete {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.goal-action-btn--delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.6);
 }
 
 .goal-icon {

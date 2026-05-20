@@ -13,6 +13,9 @@ export const goalsMock: GoalsData = {
       accent: 'blue',
       icon: '⎈',
       iconType: 'k8s',
+      status: 'ACTIVE',
+      pausedAt: null,
+      totalPausedDays: 0,
       items: [
         { id: 'goal-1-item-1', title: 'Пройти курс по основам Kubernetes', done: true, date: '20 апр' },
         { id: 'goal-1-item-2', title: 'Развернуть кластер в облаке', done: true, date: '5 май' },
@@ -31,6 +34,9 @@ export const goalsMock: GoalsData = {
       accent: 'green',
       icon: '$',
       iconType: 'dollar',
+      status: 'PAUSED',
+      pausedAt: '2025-11-10',
+      totalPausedDays: 12,
       items: [
         { id: 'goal-2-item-1', title: 'Проанализировать текущие источники дохода', done: true, date: '10 апр' },
         { id: 'goal-2-item-2', title: 'Составить финансовую стратегию', done: true, date: '25 апр' },
@@ -49,6 +55,9 @@ export const goalsMock: GoalsData = {
       accent: 'orange',
       icon: '🏋️',
       iconType: 'dumbbell',
+      status: 'ACTIVE',
+      pausedAt: null,
+      totalPausedDays: 0,
       items: [
         { id: 'goal-3-item-1', title: 'Тренироваться 3 раза в неделю', done: true, date: 'ср, пт' },
         { id: 'goal-3-item-2', title: 'Правильное питание', done: false, date: 'ежедневно' },

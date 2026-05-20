@@ -14,6 +14,9 @@ const goal: Goal = {
   accent: 'blue',
   icon: '⎈',
   iconType: 'k8s',
+  status: 'ACTIVE',
+  pausedAt: null,
+  totalPausedDays: 0,
   items: [
     { title: 'Подцель 1', done: true, date: '10 мая' },
     { title: 'Подцель 2', done: false, date: '12 мая' },

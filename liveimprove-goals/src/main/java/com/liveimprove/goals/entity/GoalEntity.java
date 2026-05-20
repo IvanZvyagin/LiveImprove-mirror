@@ -58,6 +58,12 @@ public class GoalEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "paused_at")
+    private LocalDate pausedAt;
+
+    @Column(name = "total_paused_days", nullable = false)
+    private int totalPausedDays = 0;
+
     @Column(name = "completed_at")
     private LocalDate completedAt;
 

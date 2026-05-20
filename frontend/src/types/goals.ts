@@ -1,5 +1,7 @@
 export type GoalAccent = 'blue' | 'green' | 'orange' | 'purple'
 
+export type GoalStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED'
+
 export type GoalItem = {
   id?: string
   title: string
@@ -18,6 +20,9 @@ export type Goal = {
   icon: string
   iconType: string
   items: GoalItem[]
+  status: GoalStatus
+  pausedAt: string | null
+  totalPausedDays: number
 }
 
 export type CompletedGoal = {

@@ -42,6 +42,24 @@ public class GoalsController implements GoalsApi {
     }
 
     @Override
+    public ResponseEntity<Void> completeGoal(Jwt jwt, UUID goalId) {
+        goalsService.completeGoal(claimsExtractor.getUserIdAsUuid(jwt), goalId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> pauseGoal(Jwt jwt, UUID goalId) {
+        goalsService.pauseGoal(claimsExtractor.getUserIdAsUuid(jwt),goalId);
+        return  ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> resumeGoal(Jwt jwt, UUID goalId) {
+        goalsService.resumeGoal(claimsExtractor.getUserIdAsUuid(jwt),goalId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
     public ResponseEntity<Void> deleteGoal(Jwt jwt, UUID goalId) {
         goalsService.deleteGoal(claimsExtractor.getUserIdAsUuid(jwt), goalId);
         return ResponseEntity.noContent().build();

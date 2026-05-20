@@ -53,6 +53,33 @@ public interface GoalsApi {
     );
 
     /**
+     * Завершить Цель без подцелей.
+     */
+    @PatchMapping("/{goalId}/complete")
+    ResponseEntity<Void> completeGoal(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID goalId
+    );
+
+    /**
+     * Поставить Цель на паузу
+     */
+    @PatchMapping("/{goalId}/pause")
+    ResponseEntity<Void> pauseGoal(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID goalId
+    );
+
+    /**
+     * Возобновить Цель
+     */
+    @PatchMapping("/{goalId}/resume")
+    ResponseEntity<Void> resumeGoal(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID goalId
+    );
+
+    /**
      * Удалить цель по идентификатору.
      *
      * @param jwt JWT текущего пользователя
